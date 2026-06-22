@@ -16,6 +16,12 @@ npm install
 cp .env.example .env
 ```
 
+PowerShell alternative:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 3. Set `VITE_API_BASE_URL` to your backend API base URL, for example:
 
 ```env

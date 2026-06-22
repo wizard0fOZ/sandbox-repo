@@ -16,6 +16,12 @@ npm install
 cp .env.example .env
 ```
 
+PowerShell alternative:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 3. Fill in the environment variables in `.env`.
 
 ## Environment variables
