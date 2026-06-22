@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum MissionStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id          String              @id @default(uuid())
+  email       String              @unique
+  fullName    String
+  role        UserRole            @default(USER)
+  createdAt   DateTime            @default(now())
+  submissions MissionSubmission[]
+}
+
+model Mission {
+  id          String              @id @default(uuid())
+  title       String
+  description String
+  points      Int                 @default(10)
+  status      MissionStatus       @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  submissions MissionSubmission[]
+}
+
+model MissionSubmission {
+  id            String           @id @default(uuid())
+  userId        String
+  missionId     String
+  notes         String?
+  status        SubmissionStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  user          User             @relation(fields: [userId], references: [id])
+  mission       Mission          @relation(fields: [missionId], references: [id])
+  uploadedFiles UploadedFile[]
+}
+
+model UploadedFile {
+  id                  String             @id @default(uuid())
+  missionSubmissionId String?
+  blobName            String
+  fileName            String
+  contentType         String
+  url                 String
+  createdAt           DateTime           @default(now())
+  missionSubmission   MissionSubmission? @relation(fields: [missionSubmissionId], references: [id])
+}
