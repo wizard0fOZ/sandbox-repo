@@ -1,0 +1,283 @@
+{
+  "info": {
+    "_postman_id": "0d848060-5b9d-4b90-9864-a2c80294b6d0",
+    "name": "SDG Recycling Sandbox API",
+    "description": "Beginner-friendly Postman collection for testing the current backend during development. Import this collection together with one of the included environment files.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Smoke Checks",
+      "description": "Basic requests to confirm the backend is running before testing deeper features.",
+      "item": [
+        {
+          "name": "Check Backend Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Use this first to confirm the backend server is reachable.\n\nSuccess looks like:\n- HTTP 200\n- JSON response with a `message`\n\nSetup:\n- Start the backend locally with `npm run dev` or `npm start`.",
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test(\"Response includes a message\", function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Checks the API health endpoint.\n\nSuccess looks like:\n- HTTP 200\n- `status` equals `ok`\n- `message` confirms the sandbox backend is running\n\nSetup:\n- Backend server must be running.",
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/health",
+              "host": [
+                "{{baseUrl}}{{apiPrefix}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test(\"Health response matches expected shape\", function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.status).to.eql(\"ok\");",
+                  "  pm.expect(data.message).to.eql(\"Sandbox backend running\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Database",
+      "description": "Checks that Prisma can reach the configured PostgreSQL database.",
+      "item": [
+        {
+          "name": "Test Database Connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Verifies the backend can connect to the database.\n\nSuccess looks like:\n- HTTP 200\n- `status` equals `ok`\n- `currentTime` is returned from the database query\n\nSetup:\n- Backend server must be running\n- `DATABASE_URL` must point to a working PostgreSQL database",
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/db-test",
+              "host": [
+                "{{baseUrl}}{{apiPrefix}}"
+              ],
+              "path": [
+                "db-test"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test(\"Database response matches expected shape\", function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.status).to.eql(\"ok\");",
+                  "  pm.expect(data.message).to.eql(\"Database connection successful\");",
+                  "  pm.expect(data.currentTime).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "description": "Tests file upload behavior, including the success path and a simple validation error case.",
+      "item": [
+        {
+          "name": "Upload Mission Proof",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "description": "Uploads one mission proof file to Azure Blob Storage and stores metadata in the database.\n\nSuccess looks like:\n- HTTP 201\n- `message` confirms the upload worked\n- `blobName` and `url` are returned\n\nSetup:\n- Backend server must be running\n- `DATABASE_URL` must be valid\n- `AZURE_STORAGE_CONNECTION_STRING` must be configured\n- In form-data, the file field name must be exactly `file`",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{testFilePath}}",
+                  "description": "Choose any sample file from your computer when running this request in Postman."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/uploads/mission-proof",
+              "host": [
+                "{{baseUrl}}{{apiPrefix}}"
+              ],
+              "path": [
+                "uploads",
+                "mission-proof"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test(\"Upload response matches expected shape\", function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.message).to.eql(\"File uploaded successfully\");",
+                  "  pm.expect(data.blobName).to.be.a(\"string\");",
+                  "  pm.expect(data.url).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload Mission Proof Without File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "description": "Checks the beginner-friendly validation message when no file is sent.\n\nSuccess looks like:\n- HTTP 400\n- Response message explains that the `file` field is required\n\nSetup:\n- Backend server must be running",
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/uploads/mission-proof",
+              "host": [
+                "{{baseUrl}}{{apiPrefix}}"
+              ],
+              "path": [
+                "uploads",
+                "mission-proof"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "  pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test(\"Missing file message is clear\", function () {",
+                  "  var data = pm.response.json();",
+                  "  pm.expect(data.message).to.eql(\"A file is required under the field name 'file'.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Future APIs",
+      "description": "Placeholder folder for future routes such as auth, users, missions, and submissions. Add new requests here as the backend grows.",
+      "item": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "apiPrefix",
+      "value": "/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "testFilePath",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "missionId",
+      "value": "sample-mission-id",
+      "type": "string"
+    },
+    {
+      "key": "submissionId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

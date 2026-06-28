@@ -75,6 +75,27 @@ npm run prisma:seed
 
 For the upload request, use `form-data` and send the file under the field name `file`.
 
+## Shared Postman files
+
+This folder includes beginner-friendly Postman files that can be shared with teammates:
+
+- `postman_collection.json`
+- `postman_environment_local.json`
+- `postman_environment_shared.json`
+
+### How to use them
+
+1. Open Postman and import `postman_collection.json`.
+2. Import either the local or shared environment file.
+3. Select the environment in Postman.
+4. Start the backend and run the requests one by one.
+
+### Notes
+
+- The local environment defaults to `http://localhost:5000`.
+- The upload endpoint expects `multipart/form-data` with the file field named `file`.
+- The shared environment is a template. Replace the placeholder `baseUrl` with your deployed backend URL before sharing it with others.
+
 ## Deploying to Azure App Service
 
 1. Create the required environment variables in Azure App Service.
