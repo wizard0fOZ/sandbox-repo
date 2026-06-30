@@ -4,6 +4,16 @@ function getMissionProofContainerName() {
   return process.env.AZURE_STORAGE_CONTAINER_MISSION_PROOFS || "mission-proofs";
 }
 
+function buildPublicFileUrl(containerName, blobName, fallbackUrl) {
+  const baseUrl = process.env.AZURE_STORAGE_BLOB_BASE_URL;
+
+  if (!baseUrl) {
+    return fallbackUrl;
+  }
+
+  return `${baseUrl.replace(/\/$/, "")}/${containerName}/${blobName}`;
+}
+
 function buildBlobName(originalName) {
   const safeName = originalName.replace(/\s+/g, "-").toLowerCase();
   return `${Date.now()}-${safeName}`;
@@ -34,6 +44,6 @@ export async function uploadMissionProofFile(file) {
   return {
     containerName,
     blobName,
-    url: blockBlobClient.url
+    url: buildPublicFileUrl(containerName, blobName, blockBlobClient.url)
   };
 }

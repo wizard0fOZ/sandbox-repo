@@ -24,6 +24,8 @@ Copy-Item .env.example .env
 
 3. Fill in the environment variables in `.env`.
 
+For the repo-level Docker sandbox, `backend/.env.docker` is already prepared for Compose.
+
 ## Environment variables
 
 - `PORT`: Backend port. The app listens on `process.env.PORT || 5000`.
@@ -31,6 +33,7 @@ Copy-Item .env.example .env
 - `JWT_SECRET`: Placeholder for future auth-related sandbox testing.
 - `AZURE_STORAGE_CONNECTION_STRING`: Azure Blob Storage connection string.
 - `AZURE_STORAGE_CONTAINER_MISSION_PROOFS`: Blob container name for mission proof uploads.
+- `AZURE_STORAGE_BLOB_BASE_URL`: Optional override for returned blob URLs during local Docker testing.
 - `FRONTEND_URL`: Deployed Azure Static Web App URL allowed by CORS.
 
 ## Run locally
@@ -46,6 +49,23 @@ Start in normal mode:
 ```bash
 npm start
 ```
+
+## Docker sandbox flow
+
+From the repository root:
+
+```bash
+docker compose up -d --build
+```
+
+This starts:
+
+- backend on `http://localhost:5000`
+- PostgreSQL on `localhost:5432`
+- Azurite on `localhost:10000`
+- `web-admin` on `http://localhost:5173`
+
+The backend container automatically runs `prisma generate` and `prisma db push` before starting.
 
 ## Prisma workflow
 
@@ -94,6 +114,7 @@ This folder includes beginner-friendly Postman files that can be shared with tea
 
 - The local environment defaults to `http://localhost:5000`.
 - The upload endpoint expects `multipart/form-data` with the file field named `file`.
+- In the Docker sandbox, uploads are stored in local Azurite and the response URL points to `localhost:10000`.
 - The shared environment is a template. Replace the placeholder `baseUrl` with your deployed backend URL before sharing it with others.
 
 ## Deploying to Azure App Service

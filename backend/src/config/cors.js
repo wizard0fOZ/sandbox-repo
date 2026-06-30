@@ -1,4 +1,4 @@
-const defaultOrigins = ["http://localhost:5173"];
+const defaultOrigins = ["http://localhost:5173", "http://localhost:4173"];
 
 export function buildCorsOptions() {
   const allowedOrigins = [...defaultOrigins];

@@ -28,6 +28,8 @@ Copy-Item .env.example .env
 VITE_API_BASE_URL=https://your-backend-app.azurewebsites.net/api/v1
 ```
 
+For the repo-level Docker sandbox, `web-admin/.env.docker` already points to `http://localhost:5000/api/v1`.
+
 ## Run locally
 
 ```bash
@@ -35,6 +37,22 @@ npm run dev
 ```
 
 The Vite development server runs on `http://localhost:5173` by default.
+
+## Docker sandbox flow
+
+From the repository root:
+
+```bash
+docker compose up -d --build
+```
+
+Then open `http://localhost:5173`.
+
+This frontend is intended to verify:
+
+- backend health
+- database connectivity
+- mission proof upload
 
 ## Build
 
