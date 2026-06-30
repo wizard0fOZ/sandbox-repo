@@ -66,6 +66,7 @@ This starts:
 - `web-admin` on `http://localhost:5173`
 
 The backend container automatically runs `prisma generate` and `prisma db push` before starting.
+Azurite is started with `--skipApiVersionCheck` so local uploads remain compatible with the current Azure Blob SDK used by the backend.
 
 ## Prisma workflow
 

@@ -18,6 +18,8 @@ You can run a full local sandbox with Docker Compose for backend, web UI, Postgr
 - `backend`: Express API on `http://localhost:5000`
 - `web-admin`: Vite app on `http://localhost:5173`
 
+The Azurite service is started with `--skipApiVersionCheck` so it can accept the newer storage API version used by the current Azure Blob SDK in this sandbox.
+
 ### Start the stack
 
 ```bash
