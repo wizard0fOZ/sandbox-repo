@@ -8,59 +8,221 @@ datasource db {
 }
 
 enum UserRole {
-  ADMIN
   USER
+  ADMIN
 }
 
 enum MissionStatus {
+  DRAFT
   ACTIVE
-  INACTIVE
+  ARCHIVED
+}
+
+enum MissionType {
+  QUANTITY
+  TIME
+  STREAK
+  EVENT
+  QUIZ
+}
+
+enum ApprovalMode {
+  AUTO
+  MANUAL
 }
 
 enum SubmissionStatus {
   PENDING
   APPROVED
   REJECTED
+  DUPLICATE
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuizAttemptStatus {
+  PASSED
+  FAILED
+  IN_PROGRESS
+}
+
+enum BadgeTier {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum BadgeCriteriaType {
+  MISSIONS_COMPLETED
+  QUIZ_PASS
+  LEARNING_STREAK
+  POINTS_EARNED
+}
+
+enum PointsEventType {
+  MISSION_APPROVED
+  QUIZ_PASSED
+  BADGE_AWARDED
+}
+
+enum UploadPurpose {
+  MISSION_PROOF
+  CONTENT_IMAGE
+  PROFILE_IMAGE
 }
 
 model User {
-  id          String              @id @default(uuid())
-  email       String              @unique
-  fullName    String
-  role        UserRole            @default(USER)
-  createdAt   DateTime            @default(now())
-  submissions MissionSubmission[]
+  id                 String              @id @default(uuid())
+  name               String
+  email              String              @unique
+  passwordHash       String?
+  role               UserRole            @default(USER)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  submissions        MissionSubmission[] @relation("SubmissionAuthor")
+  reviewedSubmissions MissionSubmission[] @relation("SubmissionReviewer")
+  missionsCreated    Mission[]           @relation("MissionCreator")
+  contentCreated     Content[]           @relation("ContentCreator")
+  quizAttempts       QuizAttempt[]
+  pointsEvents       PointsEvent[]
+  uploadedFiles      UploadedFile[]
 }
 
 model Mission {
-  id          String              @id @default(uuid())
-  title       String
-  description String
-  points      Int                 @default(10)
-  status      MissionStatus       @default(ACTIVE)
-  createdAt   DateTime            @default(now())
-  submissions MissionSubmission[]
+  id            String              @id @default(uuid())
+  title         String
+  description   String
+  missionType   MissionType         @default(QUANTITY)
+  points        Int                 @default(10)
+  startDate     DateTime?
+  endDate       DateTime?
+  submissionCap Int                 @default(1)
+  approvalMode  ApprovalMode        @default(MANUAL)
+  status        MissionStatus       @default(DRAFT)
+  createdById   String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     User                @relation("MissionCreator", fields: [createdById], references: [id])
+  submissions   MissionSubmission[]
+  pointsEvents  PointsEvent[]
 }
 
 model MissionSubmission {
-  id            String           @id @default(uuid())
-  userId        String
-  missionId     String
-  notes         String?
-  status        SubmissionStatus @default(PENDING)
-  createdAt     DateTime         @default(now())
-  user          User             @relation(fields: [userId], references: [id])
-  mission       Mission          @relation(fields: [missionId], references: [id])
-  uploadedFiles UploadedFile[]
+  id                 String           @id @default(uuid())
+  missionId          String
+  userId             String
+  proofText          String?
+  proofImageUrl      String?
+  proofImageBlobName String?
+  quantity           Int?
+  status             SubmissionStatus @default(PENDING)
+  reviewNote         String?
+  reviewedById       String?
+  submittedAt        DateTime         @default(now())
+  reviewedAt         DateTime?
+  user               User             @relation("SubmissionAuthor", fields: [userId], references: [id])
+  mission            Mission          @relation(fields: [missionId], references: [id])
+  reviewedBy         User?            @relation("SubmissionReviewer", fields: [reviewedById], references: [id])
+  uploadedFiles      UploadedFile[]
+  pointsEvents       PointsEvent[]
+}
+
+model PointsEvent {
+  id           String          @id @default(uuid())
+  userId       String
+  missionId    String?
+  submissionId String?
+  eventType    PointsEventType
+  points       Int
+  status       String          @default("LOCAL_RECORDED")
+  emittedAt    DateTime        @default(now())
+  user         User            @relation(fields: [userId], references: [id])
+  mission      Mission?        @relation(fields: [missionId], references: [id])
+  submission   MissionSubmission? @relation(fields: [submissionId], references: [id])
+}
+
+model Content {
+  id          String        @id @default(uuid())
+  title       String
+  body        String
+  category    String?
+  tags        Json?
+  version     Int           @default(1)
+  status      ContentStatus @default(DRAFT)
+  createdById String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  createdBy   User          @relation("ContentCreator", fields: [createdById], references: [id])
+  quizzes     Quiz[]
+  uploads     UploadedFile[]
+}
+
+model Quiz {
+  id           String        @id @default(uuid())
+  contentId    String
+  title        String
+  passingScore Int           @default(70)
+  status       ContentStatus @default(DRAFT)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  content      Content       @relation(fields: [contentId], references: [id])
+  questions    QuizQuestion[]
+  attempts     QuizAttempt[]
+}
+
+model QuizQuestion {
+  id            String @id @default(uuid())
+  quizId        String
+  questionText  String
+  options       Json
+  correctAnswer String
+  points        Int    @default(1)
+  quiz          Quiz   @relation(fields: [quizId], references: [id])
+}
+
+model QuizAttempt {
+  id             String            @id @default(uuid())
+  quizId         String
+  userId         String
+  score          Int
+  totalQuestions Int
+  correctAnswers Int
+  passed         Boolean
+  status         QuizAttemptStatus @default(IN_PROGRESS)
+  answers        Json?
+  attemptedAt    DateTime          @default(now())
+  quiz           Quiz              @relation(fields: [quizId], references: [id])
+  user           User              @relation(fields: [userId], references: [id])
+}
+
+model Badge {
+  id            String            @id @default(uuid())
+  name          String
+  description   String
+  tier          BadgeTier
+  criteriaType  BadgeCriteriaType
+  criteriaValue Int
+  status        String            @default("ACTIVE")
+  createdAt     DateTime          @default(now())
 }
 
 model UploadedFile {
-  id                  String             @id @default(uuid())
+  id                String             @id @default(uuid())
+  userId            String?
   missionSubmissionId String?
-  blobName            String
-  fileName            String
-  contentType         String
-  url                 String
-  createdAt           DateTime           @default(now())
-  missionSubmission   MissionSubmission? @relation(fields: [missionSubmissionId], references: [id])
+  contentId         String?
+  containerName     String
+  blobName          String
+  fileUrl           String
+  mimeType          String
+  fileSize          Int
+  purpose           UploadPurpose
+  createdAt         DateTime           @default(now())
+  user              User?              @relation(fields: [userId], references: [id])
+  missionSubmission MissionSubmission? @relation(fields: [missionSubmissionId], references: [id])
+  content           Content?           @relation(fields: [contentId], references: [id])
 }

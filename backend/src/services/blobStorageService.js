@@ -11,15 +11,14 @@ function buildBlobName(originalName) {
 
 export async function uploadMissionProofFile(file) {
   const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const containerName = getMissionProofContainerName();
 
   if (!connectionString) {
     throw new Error("AZURE_STORAGE_CONNECTION_STRING is not configured.");
   }
 
   const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-  const containerClient = blobServiceClient.getContainerClient(
-    getMissionProofContainerName()
-  );
+  const containerClient = blobServiceClient.getContainerClient(containerName);
 
   await containerClient.createIfNotExists();
 
@@ -33,6 +32,7 @@ export async function uploadMissionProofFile(file) {
   });
 
   return {
+    containerName,
     blobName,
     url: blockBlobClient.url
   };

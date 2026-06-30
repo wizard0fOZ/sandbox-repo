@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "0d848060-5b9d-4b90-9864-a2c80294b6d0",
     "name": "SDG Recycling Sandbox API",
-    "description": "Beginner-friendly Postman collection for testing the current backend during development. Import this collection together with one of the included environment files.",
+    "description": "Beginner-friendly Postman collection for testing the current backend during development.\n\nCurrent live endpoints:\n- GET /\n- GET /api/v1/health\n- GET /api/v1/db-test\n- POST /api/v1/uploads/mission-proof\n\nPlanned system enum reference:\n- User roles: USER, ADMIN\n- Mission status: DRAFT, ACTIVE, ARCHIVED\n- Mission type: QUANTITY, TIME, STREAK, EVENT, QUIZ\n- Approval mode: AUTO, MANUAL\n- Submission status: PENDING, APPROVED, REJECTED, DUPLICATE\n- Content status: DRAFT, PUBLISHED, ARCHIVED\n- Quiz attempt status: PASSED, FAILED, IN_PROGRESS\n- Badge tiers: BRONZE, SILVER, GOLD\n- Badge criteria types: MISSIONS_COMPLETED, QUIZ_PASS, LEARNING_STREAK, POINTS_EARNED\n- Points event types: MISSION_APPROVED, QUIZ_PASSED, BADGE_AWARDED\n- Upload purpose: MISSION_PROOF, CONTENT_IMAGE, PROFILE_IMAGE\n\nNote: most of the planned enum values above are not implemented in the current backend yet. They are included here so the Postman file stays easy to grow as the API expands.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -147,7 +147,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "description": "Uploads one mission proof file to Azure Blob Storage and stores metadata in the database.\n\nSuccess looks like:\n- HTTP 201\n- `message` confirms the upload worked\n- `blobName` and `url` are returned\n\nSetup:\n- Backend server must be running\n- `DATABASE_URL` must be valid\n- `AZURE_STORAGE_CONNECTION_STRING` must be configured\n- In form-data, the file field name must be exactly `file`",
+            "description": "Uploads one mission proof file to Azure Blob Storage and stores metadata in the database.\n\nSuccess looks like:\n- HTTP 201\n- `message` confirms the upload worked\n- `blobName` and `url` are returned\n\nSetup:\n- Backend server must be running\n- `DATABASE_URL` must be valid\n- `AZURE_STORAGE_CONNECTION_STRING` must be configured\n- In form-data, the file field name must be exactly `file`\n- Planned upload purpose enum for future APIs: `{{uploadPurposeMissionProof}}`",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -239,8 +239,41 @@
     },
     {
       "name": "Future APIs",
-      "description": "Placeholder folder for future routes such as auth, users, missions, and submissions. Add new requests here as the backend grows.",
-      "item": []
+      "description": "Planned API areas based on the backend data model you described. These folders act as a roadmap for future Postman requests even though the routes are not implemented yet.",
+      "item": [
+        {
+          "name": "Users",
+          "description": "Planned user fields: id, name, email, passwordHash, role, createdAt, updatedAt.\n\nImportant enums:\n- role: `{{userRoleUser}}`, `{{userRoleAdmin}}`"
+        },
+        {
+          "name": "Missions",
+          "description": "Planned mission fields: id, title, description, missionType, points, startDate, endDate, submissionCap, approvalMode, status, createdById, createdAt, updatedAt.\n\nImportant enums:\n- missionType: `{{missionTypeQuantity}}`, `{{missionTypeTime}}`, `{{missionTypeStreak}}`, `{{missionTypeEvent}}`, `{{missionTypeQuiz}}`\n- approvalMode: `{{approvalModeAuto}}`, `{{approvalModeManual}}`\n- status: `{{missionStatusDraft}}`, `{{missionStatusActive}}`, `{{missionStatusArchived}}`\n\nSuggested future collection variables already included:\n- `missionId`\n- `adminUserId`"
+        },
+        {
+          "name": "Submissions",
+          "description": "Planned submission fields: id, missionId, userId, proofText, proofImageUrl, proofImageBlobName, quantity, status, reviewNote, reviewedById, submittedAt, reviewedAt.\n\nImportant enums:\n- status: `{{submissionStatusPending}}`, `{{submissionStatusApproved}}`, `{{submissionStatusRejected}}`, `{{submissionStatusDuplicate}}`\n- `DUPLICATE` is expected to map to HTTP 409 Conflict in future APIs.\n\nSuggested future collection variables already included:\n- `submissionId`\n- `reviewedById`"
+        },
+        {
+          "name": "Points",
+          "description": "Planned points event fields: id, userId, missionId, submissionId, eventType, points, status, emittedAt.\n\nImportant enums:\n- eventType: `{{pointsEventMissionApproved}}`, `{{pointsEventQuizPassed}}`, `{{pointsEventBadgeAwarded}}`"
+        },
+        {
+          "name": "Content",
+          "description": "Planned content fields: id, title, body, category, tags, version, status, createdById, createdAt, updatedAt.\n\nImportant enums:\n- status: `{{contentStatusDraft}}`, `{{contentStatusPublished}}`, `{{contentStatusArchived}}`"
+        },
+        {
+          "name": "Quizzes",
+          "description": "Planned quiz-related tables include quiz, quiz questions, and quiz attempts.\n\nQuiz fields: id, contentId, title, passingScore, status, createdAt, updatedAt.\nQuiz question fields: id, quizId, questionText, options, correctAnswer, points.\nQuiz attempt fields: id, quizId, userId, score, totalQuestions, correctAnswers, passed, answers, attemptedAt.\n\nImportant enums:\n- quiz attempt status: `{{quizAttemptPassed}}`, `{{quizAttemptFailed}}`, `{{quizAttemptInProgress}}`\n- content or quiz publication status can reuse `{{contentStatusPublished}}`"
+        },
+        {
+          "name": "Badges",
+          "description": "Planned badge fields: id, name, description, tier, criteriaType, criteriaValue, status, createdAt.\n\nImportant enums:\n- tier: `{{badgeTierBronze}}`, `{{badgeTierSilver}}`, `{{badgeTierGold}}`\n- criteriaType: `{{badgeCriteriaMissionsCompleted}}`, `{{badgeCriteriaQuizPass}}`, `{{badgeCriteriaLearningStreak}}`, `{{badgeCriteriaPointsEarned}}`"
+        },
+        {
+          "name": "Uploads Reference",
+          "description": "Planned upload table fields: id, userId, containerName, blobName, fileUrl, mimeType, fileSize, purpose, createdAt.\n\nImportant enums:\n- purpose: `{{uploadPurposeMissionProof}}`, `{{uploadPurposeContentImage}}`, `{{uploadPurposeProfileImage}}`"
+        }
+      ]
     }
   ],
   "variable": [
@@ -270,6 +303,16 @@
       "type": "string"
     },
     {
+      "key": "adminUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reviewedById",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "missionId",
       "value": "sample-mission-id",
       "type": "string"
@@ -277,6 +320,196 @@
     {
       "key": "submissionId",
       "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "quizId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "badgeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userRoleUser",
+      "value": "USER",
+      "type": "string"
+    },
+    {
+      "key": "userRoleAdmin",
+      "value": "ADMIN",
+      "type": "string"
+    },
+    {
+      "key": "missionStatusDraft",
+      "value": "DRAFT",
+      "type": "string"
+    },
+    {
+      "key": "missionStatusActive",
+      "value": "ACTIVE",
+      "type": "string"
+    },
+    {
+      "key": "missionStatusArchived",
+      "value": "ARCHIVED",
+      "type": "string"
+    },
+    {
+      "key": "missionTypeQuantity",
+      "value": "QUANTITY",
+      "type": "string"
+    },
+    {
+      "key": "missionTypeTime",
+      "value": "TIME",
+      "type": "string"
+    },
+    {
+      "key": "missionTypeStreak",
+      "value": "STREAK",
+      "type": "string"
+    },
+    {
+      "key": "missionTypeEvent",
+      "value": "EVENT",
+      "type": "string"
+    },
+    {
+      "key": "missionTypeQuiz",
+      "value": "QUIZ",
+      "type": "string"
+    },
+    {
+      "key": "approvalModeAuto",
+      "value": "AUTO",
+      "type": "string"
+    },
+    {
+      "key": "approvalModeManual",
+      "value": "MANUAL",
+      "type": "string"
+    },
+    {
+      "key": "submissionStatusPending",
+      "value": "PENDING",
+      "type": "string"
+    },
+    {
+      "key": "submissionStatusApproved",
+      "value": "APPROVED",
+      "type": "string"
+    },
+    {
+      "key": "submissionStatusRejected",
+      "value": "REJECTED",
+      "type": "string"
+    },
+    {
+      "key": "submissionStatusDuplicate",
+      "value": "DUPLICATE",
+      "type": "string"
+    },
+    {
+      "key": "contentStatusDraft",
+      "value": "DRAFT",
+      "type": "string"
+    },
+    {
+      "key": "contentStatusPublished",
+      "value": "PUBLISHED",
+      "type": "string"
+    },
+    {
+      "key": "contentStatusArchived",
+      "value": "ARCHIVED",
+      "type": "string"
+    },
+    {
+      "key": "quizAttemptPassed",
+      "value": "PASSED",
+      "type": "string"
+    },
+    {
+      "key": "quizAttemptFailed",
+      "value": "FAILED",
+      "type": "string"
+    },
+    {
+      "key": "quizAttemptInProgress",
+      "value": "IN_PROGRESS",
+      "type": "string"
+    },
+    {
+      "key": "badgeTierBronze",
+      "value": "BRONZE",
+      "type": "string"
+    },
+    {
+      "key": "badgeTierSilver",
+      "value": "SILVER",
+      "type": "string"
+    },
+    {
+      "key": "badgeTierGold",
+      "value": "GOLD",
+      "type": "string"
+    },
+    {
+      "key": "badgeCriteriaMissionsCompleted",
+      "value": "MISSIONS_COMPLETED",
+      "type": "string"
+    },
+    {
+      "key": "badgeCriteriaQuizPass",
+      "value": "QUIZ_PASS",
+      "type": "string"
+    },
+    {
+      "key": "badgeCriteriaLearningStreak",
+      "value": "LEARNING_STREAK",
+      "type": "string"
+    },
+    {
+      "key": "badgeCriteriaPointsEarned",
+      "value": "POINTS_EARNED",
+      "type": "string"
+    },
+    {
+      "key": "pointsEventMissionApproved",
+      "value": "MISSION_APPROVED",
+      "type": "string"
+    },
+    {
+      "key": "pointsEventQuizPassed",
+      "value": "QUIZ_PASSED",
+      "type": "string"
+    },
+    {
+      "key": "pointsEventBadgeAwarded",
+      "value": "BADGE_AWARDED",
+      "type": "string"
+    },
+    {
+      "key": "uploadPurposeMissionProof",
+      "value": "MISSION_PROOF",
+      "type": "string"
+    },
+    {
+      "key": "uploadPurposeContentImage",
+      "value": "CONTENT_IMAGE",
+      "type": "string"
+    },
+    {
+      "key": "uploadPurposeProfileImage",
+      "value": "PROFILE_IMAGE",
       "type": "string"
     }
   ]

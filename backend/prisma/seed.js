@@ -1,18 +1,26 @@
 import "dotenv/config";
-import { PrismaClient, MissionStatus, UserRole } from "@prisma/client";
+import {
+  ApprovalMode,
+  MissionStatus,
+  MissionType,
+  PrismaClient,
+  UserRole
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: "admin@sdg-sandbox.local" },
     update: {
-      fullName: "Sandbox Admin",
+      name: "Sandbox Admin",
+      passwordHash: "sandbox-admin-placeholder-hash",
       role: UserRole.ADMIN
     },
     create: {
       email: "admin@sdg-sandbox.local",
-      fullName: "Sandbox Admin",
+      name: "Sandbox Admin",
+      passwordHash: "sandbox-admin-placeholder-hash",
       role: UserRole.ADMIN
     }
   });
@@ -20,12 +28,14 @@ async function main() {
   await prisma.user.upsert({
     where: { email: "student@sdg-sandbox.local" },
     update: {
-      fullName: "Test Student",
+      name: "Test Student",
+      passwordHash: "sandbox-student-placeholder-hash",
       role: UserRole.USER
     },
     create: {
       email: "student@sdg-sandbox.local",
-      fullName: "Test Student",
+      name: "Test Student",
+      passwordHash: "sandbox-student-placeholder-hash",
       role: UserRole.USER
     }
   });
@@ -35,14 +45,21 @@ async function main() {
     update: {
       title: "Upload a Recycling Activity Photo",
       description: "Submit one photo as a test mission proof upload.",
+      missionType: MissionType.QUANTITY,
       points: 25,
+      submissionCap: 1,
+      approvalMode: ApprovalMode.MANUAL,
       status: MissionStatus.ACTIVE
     },
     create: {
       id: "sample-mission-id",
       title: "Upload a Recycling Activity Photo",
       description: "Submit one photo as a test mission proof upload.",
+      missionType: MissionType.QUANTITY,
       points: 25,
+      submissionCap: 1,
+      approvalMode: ApprovalMode.MANUAL,
+      createdById: admin.id,
       status: MissionStatus.ACTIVE
     }
   });

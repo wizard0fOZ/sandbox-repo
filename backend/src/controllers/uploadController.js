@@ -1,3 +1,4 @@
+import { UploadPurpose } from "@prisma/client";
 import prisma from "../lib/prisma.js";
 import { uploadMissionProofFile } from "../services/blobStorageService.js";
 
@@ -14,10 +15,12 @@ export async function uploadMissionProof(request, response, next) {
 
     await prisma.uploadedFile.create({
       data: {
+        containerName: uploadResult.containerName,
         blobName: uploadResult.blobName,
-        fileName: request.file.originalname,
-        contentType: request.file.mimetype,
-        url: uploadResult.url
+        fileUrl: uploadResult.url,
+        mimeType: request.file.mimetype,
+        fileSize: request.file.size,
+        purpose: UploadPurpose.MISSION_PROOF
       }
     });
 
